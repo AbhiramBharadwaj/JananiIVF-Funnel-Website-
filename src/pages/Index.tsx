@@ -8,6 +8,14 @@ type FormData = {
   id: string;
   phone: string;
   previousIvf: "" | "yes" | "no";
+  tryingDuration: "" | "lt_1_year" | "one_to_three_years" | "gt_3_years";
+  primaryConcern:
+    | ""
+    | "failed_ivf"
+    | "low_sperm_or_azoospermia"
+    | "low_egg_reserve_or_pcos"
+    | "unexplained_infertility"
+    | "first_time_ivf";
 };
 
 const trustBar = [
@@ -112,12 +120,6 @@ const faqs = [
   },
 ];
 
-const awards = [
-  "FOGSI CORION Award",
-  "Best IVF Centre of Delhi",
-  "Best Centre for Azoospermia Treatment",
-];
-
 const Index = () => {
   const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -129,6 +131,8 @@ const Index = () => {
     id: "",
     phone: "",
     previousIvf: "",
+    tryingDuration: "",
+    primaryConcern: "",
   });
 
   const sheetsWebhookUrl =
@@ -148,6 +152,8 @@ const Index = () => {
       id: "",
       phone: "",
       previousIvf: "",
+      tryingDuration: "",
+      primaryConcern: "",
     });
     setErrors(null);
   };
@@ -164,7 +170,14 @@ const Index = () => {
 
     setErrors(null);
 
-    if (!formData.name || !formData.id || !formData.phone || !formData.previousIvf) {
+    if (
+      !formData.name ||
+      !formData.id ||
+      !formData.phone ||
+      !formData.previousIvf ||
+      !formData.tryingDuration ||
+      !formData.primaryConcern
+    ) {
       setErrors("Please complete all required fields.");
       return;
     }
@@ -178,6 +191,22 @@ const Index = () => {
 
     try {
       const previousIvfLabel = formData.previousIvf === "yes" ? "Yes" : "No";
+      const tryingDurationLabel =
+        formData.tryingDuration === "lt_1_year"
+          ? "Less than 1 year"
+          : formData.tryingDuration === "one_to_three_years"
+            ? "1 to 3 years"
+            : "More than 3 years";
+      const primaryConcernLabel =
+        formData.primaryConcern === "failed_ivf"
+          ? "Failed IVF cycles"
+          : formData.primaryConcern === "low_sperm_or_azoospermia"
+            ? "Low sperm count or azoospermia"
+            : formData.primaryConcern === "low_egg_reserve_or_pcos"
+              ? "Low egg reserve or PCOS"
+              : formData.primaryConcern === "unexplained_infertility"
+                ? "Unexplained infertility"
+                : "First-time IVF guidance";
       const leadId = `lead_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
       const receivedTime = new Date().toLocaleString("en-IN", {
         dateStyle: "medium",
@@ -191,7 +220,10 @@ const Index = () => {
         email: formData.id.trim(),
         phone: formData.phone.trim(),
         status: "New Lead",
-        qna_simple: `previous_ivf_cycle: ${previousIvfLabel}`,
+        qna_simple:
+          `previous_ivf_cycle: ${previousIvfLabel} | ` +
+          `trying_duration: ${tryingDurationLabel} | ` +
+          `primary_concern: ${primaryConcernLabel}`,
         whatsapp_message:
           `*NEW LEAD ENQUIRY - JANANI IVF*\n\n` +
           `Status: New Lead\n` +
@@ -199,7 +231,9 @@ const Index = () => {
           `Name: ${formData.name.trim()}\n` +
           `Phone: ${formData.phone.trim()}\n` +
           `Email: ${formData.id.trim()}\n` +
-          `Previous IVF Cycle: ${previousIvfLabel}\n`,
+          `Previous IVF Cycle: ${previousIvfLabel}\n` +
+          `Trying Duration: ${tryingDurationLabel}\n` +
+          `Primary Concern: ${primaryConcernLabel}\n`,
       };
 
       const leadResponse = await fetch(webhookUrl, {
@@ -220,6 +254,8 @@ const Index = () => {
         id: formData.id.trim(),
         phone: formData.phone.trim(),
         previousIvf: formData.previousIvf === "yes",
+        tryingDuration: tryingDurationLabel,
+        primaryConcern: primaryConcernLabel,
         source: "janani-ivf-patient-homepage",
       });
 
@@ -235,7 +271,7 @@ const Index = () => {
       });
 
       setIsFormOpen(false);
-      navigate("/book");
+      navigate("/thank-you");
     } catch (error) {
       console.error("[LeadCapture] Submission failed", error);
       setErrors("Lead submission failed. Please try again in a few seconds.");
@@ -307,45 +343,6 @@ const Index = () => {
                 <p className="max-w-3xl text-sm font-medium text-slate-600">
                   Clinic located in Paschim Vihar, West Delhi — Serving patients from across India and 16 countries
                 </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-[#ecebe7] pb-8">
-          <div className="mx-auto max-w-6xl px-4">
-            <div className="rounded-3xl border border-[#d5d2ca] bg-[#f7f6f2] p-8 shadow-sm sm:p-10">
-              <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-                <div>
-                  <div className="editorial-kicker w-fit">Meet Your Specialist</div>
-                  <h2 className="mt-4 text-3xl font-extrabold sm:text-4xl">
-                    Dr. Rutvij Dalal
-                  </h2>
-                  <p className="mt-2 text-lg font-semibold text-slate-700">
-                    MBBS, DGO Gold Medalist, DNB, FNB Reproductive Medicine, MRCOG(I), Fellowship in IVF - Oxford, UK
-                  </p>
-                  <p className="mt-5 text-lg leading-8 text-slate-700">
-                    16+ years focused exclusively on infertility. No general gynecology. No obstetrics. Only fertility care designed for couples who need clarity, precision, and a better chance at success.
-                  </p>
-                  <blockquote className="mt-6 border-l-4 border-[#111] pl-4 text-lg italic leading-8 text-slate-700">
-                    "Every couple deserves a treatment plan built around their own biology, history, and hope. IVF should never feel rushed or generic."
-                  </blockquote>
-                </div>
-                <div className="rounded-3xl border border-[#d5d2ca] bg-white p-6 shadow-sm">
-                  <div className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Recognition
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {awards.map((item) => (
-                      <div
-                        key={item}
-                        className="rounded-2xl border border-slate-200 bg-[#f7f6f2] px-4 py-4 text-base font-semibold text-slate-800"
-                      >
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -654,6 +651,70 @@ const Index = () => {
                         onClick={() => setFormData({ ...formData, previousIvf: option.value as "yes" | "no" })}
                         className={`rounded-lg border px-3 py-3 text-left text-sm font-semibold transition ${
                           formData.previousIvf === option.value ? "border-[#0066FF] bg-blue-50 text-[#0B1534]" : "border-slate-200 bg-white"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3 rounded-lg bg-slate-50 p-4">
+                  <div className="text-sm font-semibold text-slate-800">
+                    How long have you been trying to conceive?*
+                  </div>
+                  <div className="grid gap-3">
+                    {[
+                      { label: "Less than 1 year", value: "lt_1_year" },
+                      { label: "1 to 3 years", value: "one_to_three_years" },
+                      { label: "More than 3 years", value: "gt_3_years" },
+                    ].map((option) => (
+                      <button
+                        type="button"
+                        key={option.value}
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            tryingDuration: option.value as FormData["tryingDuration"],
+                          })
+                        }
+                        className={`rounded-lg border px-3 py-3 text-left text-sm font-semibold transition ${
+                          formData.tryingDuration === option.value
+                            ? "border-[#0066FF] bg-blue-50 text-[#0B1534]"
+                            : "border-slate-200 bg-white"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3 rounded-lg bg-slate-50 p-4">
+                  <div className="text-sm font-semibold text-slate-800">
+                    What is your main concern right now?*
+                  </div>
+                  <div className="grid gap-3">
+                    {[
+                      { label: "Failed IVF cycles", value: "failed_ivf" },
+                      { label: "Low sperm count or azoospermia", value: "low_sperm_or_azoospermia" },
+                      { label: "Low egg reserve or PCOS", value: "low_egg_reserve_or_pcos" },
+                      { label: "Unexplained infertility", value: "unexplained_infertility" },
+                      { label: "Need first-time IVF guidance", value: "first_time_ivf" },
+                    ].map((option) => (
+                      <button
+                        type="button"
+                        key={option.value}
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            primaryConcern: option.value as FormData["primaryConcern"],
+                          })
+                        }
+                        className={`rounded-lg border px-3 py-3 text-left text-sm font-semibold transition ${
+                          formData.primaryConcern === option.value
+                            ? "border-[#0066FF] bg-blue-50 text-[#0B1534]"
+                            : "border-slate-200 bg-white"
                         }`}
                       >
                         {option.label}
